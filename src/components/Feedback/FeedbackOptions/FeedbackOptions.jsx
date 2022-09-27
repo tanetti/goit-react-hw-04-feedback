@@ -11,23 +11,21 @@ import {
 export const FeedbackOptions = ({
   options: { name, quantity },
   onLeaveFeedback,
-}) => {
-  return (
-    <FeedbackListItem>
-      <FeedbackButton
-        type="button"
-        name={name}
-        aria-label={`Leave ${name} feedback`}
-        onClick={onLeaveFeedback}
-      >
-        {name === 'good' && <ButtonGoodIcon size="100%" />}
-        {name === 'neutral' && <ButtonNormalIcon size="100%" />}
-        {name === 'bad' && <ButtonBadIcon size="100%" />}
-      </FeedbackButton>
-      <FeedbackValueLabel>{quantity}</FeedbackValueLabel>
-    </FeedbackListItem>
-  );
-};
+}) => (
+  <FeedbackListItem>
+    <FeedbackButton
+      type="button"
+      name={name}
+      aria-label={`Leave ${name} feedback`}
+      onClick={onLeaveFeedback}
+    >
+      {name === 'good' && <ButtonGoodIcon size="100%" />}
+      {name === 'neutral' && <ButtonNormalIcon size="100%" />}
+      {name === 'bad' && <ButtonBadIcon size="100%" />}
+    </FeedbackButton>
+    <FeedbackValueLabel>{quantity}</FeedbackValueLabel>
+  </FeedbackListItem>
+);
 
 FeedbackOptions.propTypes = {
   options: PropTypes.exact({

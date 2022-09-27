@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useReducer } from 'react';
 import {
   FEEDBACK_STATE_INITIAL_VALUE,
   INCREMENT_VALUE,
@@ -6,50 +6,65 @@ import {
 import { FeedbackButtonList } from './Feedback.styled';
 import { FeedbackOptions } from './FeedbackOptions/FeedbackOptions';
 import { FeedbackStatistics } from './FeedbackStatistics/FeedbackStatistics';
+import { NotificationMessage } from './NotificationMessage/NotificationMessage';
 
-export class Feedback extends Component {
-  state = FEEDBACK_STATE_INITIAL_VALUE;
+const feedbackReducer = (state, action) => {
+  switch (action.type) {
+    case 'good':
+      return { ...state, good: state.good + action.payload };
 
-  feedbackButtonClickHandler = ({ currentTarget: { name } }) =>
-    this.setState(prevState => ({ [name]: prevState[name] + INCREMENT_VALUE }));
+    case 'neutral':
+      return { ...state, neutral: state.neutral + action.payload };
 
-  calculateTotalFeedbackCount = () =>
-    Object.values(this.state).reduce((acc, value) => acc + value, 0);
+    case 'bad':
+      return { ...state, bad: state.bad + action.payload };
 
-  calculatePercentageOfFeedbackTypes = totalFeedbackCount =>
-    Object.fromEntries(
-      Object.entries(this.state).map(([key, value]) => [
-        key,
-        Math.round((value * 100) / totalFeedbackCount) || 0,
-      ])
-    );
-
-  render() {
-    const totalFeedbackCount = this.calculateTotalFeedbackCount();
-
-    const percentageOfFeedbackTypes =
-      this.calculatePercentageOfFeedbackTypes(totalFeedbackCount);
-
-    return (
-      <>
-        <FeedbackButtonList>
-          {Object.entries(this.state).map(([key, value]) => (
-            <FeedbackOptions
-              key={key}
-              options={{ name: key, quantity: value }}
-              onLeaveFeedback={this.feedbackButtonClickHandler}
-            />
-          ))}
-        </FeedbackButtonList>
-
-        {totalFeedbackCount > 0 && (
-          <FeedbackStatistics
-            totalFeedbackCount={totalFeedbackCount}
-            currentFeedbacsState={this.state}
-            percentageOfFeedbackTypes={percentageOfFeedbackTypes}
-          />
-        )}
-      </>
-    );
+    default:
+      throw new Error(`Unsupported action in Feedback Reducer ${action.type}`);
   }
-}
+};
+
+export const Feedback = () => {
+  const [state, dispatch] = useReducer(
+    feedbackReducer,
+    FEEDBACK_STATE_INITIAL_VALUE
+  );
+
+  const totalFeedbackCount = Object.values(state).reduce(
+    (acc, value) => acc + value,
+    0
+  );
+
+  const percentageOfFeedbackTypes = Object.fromEntries(
+    Object.entries(state).map(([key, value]) => [
+      key,
+      Math.round((value * 100) / totalFeedbackCount) || 0,
+    ])
+  );
+
+  return (
+    <>
+      <FeedbackButtonList>
+        {Object.entries(state).map(([key, value]) => (
+          <FeedbackOptions
+            key={key}
+            options={{ name: key, quantity: value }}
+            onLeaveFeedback={() =>
+              dispatch({ type: key, payload: INCREMENT_VALUE })
+            }
+          />
+        ))}
+      </FeedbackButtonList>
+
+      {totalFeedbackCount > 0 ? (
+        <FeedbackStatistics
+          totalFeedbackCount={totalFeedbackCount}
+          currentFeedbacsState={state}
+          percentageOfFeedbackTypes={percentageOfFeedbackTypes}
+        />
+      ) : (
+        <NotificationMessage message="There is no feedback yet" />
+      )}
+    </>
+  );
+};
